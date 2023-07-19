@@ -11,6 +11,21 @@ static bool canMove = true;
 static bool currentAngle = false;
 static float angle = 0.0f;
 static float distance = 0.0f;
+static bool isUp = false;
+static bool isDown = false;
+static bool isRight = false;
+static bool isLeft = false;
+
+typedef enum Screen {
+	WORLDMAP,
+	DUNGEON,
+	MENU
+} Screen;
+
+typedef enum MoveType {
+	FREEMOVE,
+	MENUMOVE
+} MoveType;
 
 // Forward declarations
 void inputHandler();
@@ -25,6 +40,8 @@ int main(void)
 	static const int screenWidth = 800;
 	static const int screenHeight = 600;
 	static const Vector3 origin = {0.0f, 0.0f, 0.0f};
+
+	Screen SCREENSTATE = { 1 };
 
 	InitWindow(screenWidth, screenHeight, "COMEDIA");
 	
@@ -57,7 +74,7 @@ int main(void)
 			BeginMode3D(camera);
 				
 				// draw new camera in here
-				updateMove(&camera);
+				if ((isRight || isLeft || isUp || isDown) && SCREENSTATE == 1) updateMove(&camera);
 				// figure out a way to decouple frame time with movement
 				DrawGrid(10, 10.0f);
 				// DrawPlane(origin, (Vector2){16.0f, 16.0f}, BROWN);
@@ -81,27 +98,10 @@ int main(void)
 // handle inputs and lock 
 void inputHandler()
 {
-	if (currentAngle == false) angle = 0.0f;
-	if (IsKeyDown(KEY_RIGHT) && canMove) 
-	{
-		resetStatics();
-		angle = -3.0f*DEG2RAD;
-	}
-	if (IsKeyDown(KEY_LEFT) && canMove) 
-	{
-		resetStatics();
-		angle = 3.0f*DEG2RAD;
-	}
-	if (IsKeyDown(KEY_UP) && canMove) 
-	{
-		resetStatics();
-		distance = 0.5f;
-	}
-	if (IsKeyDown(KEY_DOWN) && canMove) 
-	{
-		resetStatics();
-		angle = -6.0f*DEG2RAD;
-	}
+	if (IsKeyDown(KEY_RIGHT)) isRight = true;
+	if (IsKeyDown(KEY_LEFT)) isLeft = true;
+	if (IsKeyDown(KEY_UP)) isUp = true; 
+	if (IsKeyDown(KEY_DOWN)) isDown = true; 
 } // cutdown on repetition
 void resetStatics()
 {
@@ -111,6 +111,11 @@ void resetStatics()
 }
 void updateMove(Camera *camera)
 {
+	if (currentAngle == false) angle = 0.0f;
+	if (isRight && canMove) {resetStatics(); angle = -3.0f*DEG2RAD; }
+	if (isLeft && canMove) {resetStatics(); angle = 3.0f*DEG2RAD; }
+	if (isDown && canMove) {resetStatics(); angle = -6.0f*DEG2RAD; }
+	if (isUp && canMove) {resetStatics(); distance = 1.5f; }
 	if (framesCounter < 30) 
 	{
 	CameraYaw(camera, angle, false);
@@ -123,5 +128,6 @@ void updateMove(Camera *camera)
 		framesCounter = 0;
 		angle = 0.0f;
 		distance = 0.0f;
+		isRight = isLeft = isDown = isUp = false;
 	}
 }
