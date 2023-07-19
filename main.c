@@ -33,6 +33,8 @@ int main(void)
 
 	while(!WindowShouldClose())
 	{
+		// TODO: Add tiles for the ground, and start creating walls
+		// TODO: Create collision for walls and start creating screens 
 		BeginDrawing();
 
 			ClearBackground(RAYWHITE);
