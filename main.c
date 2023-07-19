@@ -2,6 +2,9 @@
 #include "raymath.h"
 #include <math.h>
 
+// DEFINITIONS
+#define TILESIZE 10
+
 /* Static Variables */
 static int framesCounter = 0;
 static bool canMove = true;
@@ -43,7 +46,8 @@ int main(void)
 				
 				// figure out a way to decouple frame time wiht movement
 				customCameraUpdate(&camera);
-				DrawPlane(origin, (Vector2){16.0f, 16.0f}, BROWN);
+				DrawGrid(10, 10.0f);
+				// DrawPlane(origin, (Vector2){16.0f, 16.0f}, BROWN);
 
 			EndMode3D();
 
