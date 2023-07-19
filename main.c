@@ -12,17 +12,23 @@ static bool currentAngle = false;
 static float angle = 0.0f;
 static float distance = 0.0f;
 
-void customCameraUpdate(Camera3D *camera);
+// Forward declarations
+void inputHandler();
 void CameraYaw(Camera *camera, float angle, bool rotateAroundTarget);
 void CameraMoveForward(Camera *camera, float distance, bool moveInWorldSpace);
+void updateMove(Camera *camera);
 void resetStatics();
+
 int main(void) 
 {
+	// Constant definitions
 	static const int screenWidth = 800;
 	static const int screenHeight = 600;
 	static const Vector3 origin = {0.0f, 0.0f, 0.0f};
-	InitWindow(screenWidth, screenHeight, "COMEDIA");
 
+	InitWindow(screenWidth, screenHeight, "COMEDIA");
+	
+	// Camera Parameters
 	Camera3D camera = { 0 };
 	camera.position = (Vector3){0.0f, 2.0f, 1.0f};
 	camera.target = (Vector3){0.0f, 2.0f, 0.0f };
@@ -36,21 +42,29 @@ int main(void)
 
 	while(!WindowShouldClose())
 	{
-		// TODO: Add tiles for the ground, and start creating walls
-		// TODO: Create collision for walls and start creating screens 
+		// check for input every frame
+		inputHandler();
+
+		// and then update camera movement
+
+
+		/*  TODO: Add tiles for the ground, and start creating walls
+		TODO: Create collision for walls and start creating screens */
 		BeginDrawing();
 
 			ClearBackground(RAYWHITE);
 
 			BeginMode3D(camera);
 				
-				// figure out a way to decouple frame time wiht movement
-				customCameraUpdate(&camera);
+				// draw new camera in here
+				updateMove(&camera);
+				// figure out a way to decouple frame time with movement
 				DrawGrid(10, 10.0f);
 				// DrawPlane(origin, (Vector2){16.0f, 16.0f}, BROWN);
 
 			EndMode3D();
-
+			
+			// Debug text
 			DrawText("Welcome to the world of SHIN MEGAMI TENSEI!", 10, 40, 20, LIGHTGRAY);
 			DrawText(TextFormat("%f %f %f", camera.target.x, camera.target.y, camera.target.z), 10, 70, 20, RED);
 			DrawText(TextFormat("%s", canMove ? "True" : "False"), 10, 90, 20, BLUE);
@@ -58,11 +72,14 @@ int main(void)
 			DrawFPS(10, 10);
 
 		EndDrawing();
+
+		//increment the frame counter
 		++framesCounter;
 	}
 	return 0;
 }
-void customCameraUpdate(Camera3D *camera)
+// handle inputs and lock 
+void inputHandler()
 {
 	if (currentAngle == false) angle = 0.0f;
 	if (IsKeyDown(KEY_RIGHT) && canMove) 
@@ -85,6 +102,15 @@ void customCameraUpdate(Camera3D *camera)
 		resetStatics();
 		angle = -6.0f*DEG2RAD;
 	}
+} // cutdown on repetition
+void resetStatics()
+{
+	canMove = false;
+	currentAngle = true;
+	framesCounter = 0;
+}
+void updateMove(Camera *camera)
+{
 	if (framesCounter < 30) 
 	{
 	CameraYaw(camera, angle, false);
@@ -98,10 +124,4 @@ void customCameraUpdate(Camera3D *camera)
 		angle = 0.0f;
 		distance = 0.0f;
 	}
-}
-void resetStatics()
-{
-	canMove = false;
-	currentAngle = true;
-	framesCounter = 0;
 }
