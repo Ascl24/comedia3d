@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "essentials.h"
 
 // DEFINITIONS
 #define TILESIZE 10
