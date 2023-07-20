@@ -1,5 +1,4 @@
 #include "raylib.h"
-#include <math.h>
 
 // DEFINITIONS
 #define TILESIZE 10
@@ -41,6 +40,7 @@ int main(void)
 	static const Vector3 origin = {0.0f, 0.0f, 0.0f};
 
 	Screen SCREENSTATE = { 1 };
+	MoveType MOVETYPE = { 0 }; 
 
 	InitWindow(screenWidth, screenHeight, "COMEDIA");
 	
@@ -73,10 +73,14 @@ int main(void)
 			BeginMode3D(camera);
 				
 				// draw new camera in here
-				if ((isRight || isLeft || isUp || isDown) && SCREENSTATE == 1) updateMove(&camera);
+				if ((isRight || isLeft || isUp || isDown) && SCREENSTATE == DUNGEON ) 
+				{
+					if (MOVETYPE == FREEMOVE) updateMove(&camera);
+				}
 				// figure out a way to decouple frame time with movement
 				// DrawGrid(10, 10.0f);
-				DrawPlane(origin, (Vector2){16.0f, 16.0f}, BROWN);
+				DrawPlane(origin, (Vector2){10.0f, 10.0f}, BROWN);
+				DrawPlane((Vector3){0.0f, 0.0f, 10.0f}, (Vector2){10.0f, 10.0f}, RED);
 
 			EndMode3D();
 			
@@ -94,7 +98,7 @@ int main(void)
 	}
 	return 0;
 }
-// handle inputs and lock 
+// handle inputs 
 void inputHandler()
 {
 	if (IsKeyDown(KEY_RIGHT)) isRight = true;
@@ -110,17 +114,19 @@ void resetStatics()
 }
 void updateMove(Camera *camera)
 {
+	// Update the movement if we are in a camera handled screen
 	if (currentAngle == false) angle = 0.0f;
-	if (isRight && canMove) {resetStatics(); angle = -3.0f*DEG2RAD; }
-	if (isLeft && canMove) {resetStatics(); angle = 3.0f*DEG2RAD; }
-	if (isDown && canMove) {resetStatics(); angle = -6.0f*DEG2RAD; }
-	if (isUp && canMove) {resetStatics(); distance = 1.5f; }
-	if (framesCounter < 30) 
+	if (isRight && canMove) {resetStatics(); angle = -4.5f*DEG2RAD; }
+	if (isLeft && canMove) {resetStatics(); angle = 4.5f*DEG2RAD; }
+	if (isDown && canMove) {resetStatics(); angle = -9.0f*DEG2RAD; }
+	if (isUp && canMove) {resetStatics(); distance = 0.5f; }
+
+	if (framesCounter < 20) // movement takes half a second, or 30 frames so we check framesCounter
 	{
 	CameraYaw(camera, angle, false);
 	CameraMoveForward(camera, distance, true);
 	}
-	if (framesCounter > 30) 
+	if (framesCounter > 20) 
 	{
 		canMove = true;
 		currentAngle = false;
