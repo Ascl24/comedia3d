@@ -2,7 +2,9 @@
 #include "essentials.h"
 
 // DEFINITIONS
-#define TILESIZE 10
+#ifndef MAIN
+#define MAIN
+#endif
 
 /* Static Variables */
 static int framesCounter = 0;
@@ -14,6 +16,7 @@ static bool isUp = false;
 static bool isDown = false;
 static bool isRight = false;
 static bool isLeft = false;
+static float waffle = 0.0f;
 
 typedef enum Screen {
 	WORLDMAP,
@@ -30,6 +33,7 @@ typedef enum MoveType {
 void inputHandler();
 void CameraYaw(Camera *camera, float angle, bool rotateAroundTarget);
 void CameraMoveForward(Camera *camera, float distance, bool moveInWorldSpace);
+void CameraPitch(Camera *camera, float angle, bool lockView, bool rotateAroundTarget, bool rotateUp);
 void updateMove(Camera *camera);
 void resetStatics();
 
@@ -39,6 +43,7 @@ int main(void)
 	static const int screenWidth = 800;
 	static const int screenHeight = 600;
 	static const Vector3 origin = {0.0f, 0.0f, 0.0f};
+	Vector2 TILE = (Vector2){10.0f, 10.0f};
 
 	Screen SCREENSTATE = { 1 };
 	MoveType MOVETYPE = { 0 }; 
@@ -47,8 +52,8 @@ int main(void)
 	
 	// Camera Parameters
 	Camera3D camera = { 0 };
-	camera.position = (Vector3){0.0f, 2.0f, 10.0f};
-	camera.target = (Vector3){0.0f, 2.0f, 0.0f };
+	camera.position = (Vector3){0.0f, 2.0f, 0.0f};
+	camera.target = (Vector3){0.0f, 2.0f, 1.0f };
 	camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
 	camera.fovy = 60.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
@@ -61,6 +66,8 @@ int main(void)
 	{
 		// check for input every frame
 		inputHandler();
+		if (IsKeyDown(KEY_Q)) CameraPitch(&camera, 1.0f*DEG2RAD, false, false, false ); // debug 
+		if (IsKeyDown(KEY_E)) CameraPitch(&camera, -1.0f*DEG2RAD, false, false, false ); // debug 
 
 		// and then update camera movement
 
@@ -81,14 +88,18 @@ int main(void)
 				// figure out a way to decouple frame time with movement
 				// DrawGrid(10, 10.0f);
 				DrawPlane(origin, (Vector2){10.0f, 10.0f}, BROWN);
-				DrawPlane((Vector3){0.0f, 0.0f, 10.0f}, (Vector2){10.0f, 10.0f}, RED);
+				DrawPlane((Vector3){0.0f, 0.0f, 10.0f}, TILE, RED);
+				DrawPlane((Vector3){10.0f, 0.0f, 0.0f}, TILE, BLUE);
+				DrawPlane((Vector3){10.0f, 0.0f, 10.0f}, TILE, GREEN);
+				DrawPlane((Vector3){0.0f, waffle, 0.0f}, TILE, SKYBLUE);
 
 			EndMode3D();
 			
 			// Debug text
 			DrawText("Welcome to the world of SHIN MEGAMI TENSEI!", 10, 40, 20, LIGHTGRAY);
-			DrawText(TextFormat("%f %f %f", camera.target.x, camera.target.y, camera.target.z), 10, 70, 20, RED);
+			DrawText(TextFormat("%f %f %f", camera.position.x, camera.position.y, camera.position.z), 10, 70, 20, RED);
 			DrawText(TextFormat("%s", canMove ? "True" : "False"), 10, 90, 20, BLUE);
+			DrawText(TextFormat("%f", waffle), 10, 110, 20, RED);
 
 			DrawFPS(10, 10);
 
@@ -106,6 +117,8 @@ void inputHandler()
 	if (IsKeyDown(KEY_LEFT)) isLeft = true;
 	if (IsKeyDown(KEY_UP)) isUp = true; 
 	if (IsKeyDown(KEY_DOWN)) isDown = true; 
+	if (IsKeyDown(KEY_SPACE)) waffle += 0.01f;
+	if (IsKeyDown(KEY_V)) waffle -= 0.01f;
 } // cutdown on repetition
 void resetStatics()
 {
