@@ -1,5 +1,4 @@
 #include "raylib.h"
-#include "raymath.h"
 #include <math.h>
 
 // DEFINITIONS
@@ -76,8 +75,8 @@ int main(void)
 				// draw new camera in here
 				if ((isRight || isLeft || isUp || isDown) && SCREENSTATE == 1) updateMove(&camera);
 				// figure out a way to decouple frame time with movement
-				DrawGrid(10, 10.0f);
-				// DrawPlane(origin, (Vector2){16.0f, 16.0f}, BROWN);
+				// DrawGrid(10, 10.0f);
+				DrawPlane(origin, (Vector2){16.0f, 16.0f}, BROWN);
 
 			EndMode3D();
 			
