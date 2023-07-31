@@ -17,6 +17,11 @@ static bool isDown = false;
 static bool isRight = false;
 static bool isLeft = false;
 static float waffle = 0.0f;
+static bool canMoveForwards = false;
+// importaed from raygame
+static Model model = { 0 };
+static Texture2D texMapAtlas = { 0 };
+static Color *mapPixels = 0;
 
 typedef enum Screen {
 	WORLDMAP,
@@ -52,11 +57,21 @@ int main(void)
 	
 	// Camera Parameters
 	Camera3D camera = { 0 };
-	camera.position = (Vector3){0.0f, 2.0f, 0.0f};
-	camera.target = (Vector3){0.0f, 2.0f, 1.0f };
+	camera.position = (Vector3){20.0f, 2.0f, 20.0f};
+	camera.target = (Vector3){20.0f, 2.0f, 1.0f };
 	camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
 	camera.fovy = 60.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
+
+  // Load textures
+  Image imMap = LoadImage("resources/game_map.png");  // Load texMap image (RAM)
+  Mesh mesh = GenMeshCubicmap(imMap, (Vector3){ 10.0f, 6.0f, 10.0f });
+  model = LoadModelFromMesh(mesh);                    // Load generated mesh into a model
+  texMapAtlas = LoadTexture("resources/cubicmap_atlas.png");      // Load map texture
+  model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texMapAtlas;     // Set map diffuse texture
+  mapPixels = LoadImageColors(imMap); // Get map image data to be used for collision detection
+
+  UnloadImage(imMap);
 
 	int cameraMode = CAMERA_FIRST_PERSON;
 
@@ -66,14 +81,10 @@ int main(void)
 	{
 		// check for input every frame
 		inputHandler();
-		if (IsKeyDown(KEY_Q)) CameraPitch(&camera, 1.0f*DEG2RAD, false, false, false ); // debug 
-		if (IsKeyDown(KEY_E)) CameraPitch(&camera, -1.0f*DEG2RAD, false, false, false ); // debug 
-
 		// and then update camera movement
 
 
-		/*  TODO: Add tiles for the ground, and start creating walls
-		TODO: Create collision for walls and start creating screens */
+		/* TODO: Create collision for walls and start creating screens */
 		BeginDrawing();
 
 			ClearBackground(RAYWHITE);
@@ -92,6 +103,8 @@ int main(void)
 				DrawPlane((Vector3){10.0f, 0.0f, 0.0f}, TILE, BLUE);
 				DrawPlane((Vector3){10.0f, 0.0f, 10.0f}, TILE, GREEN);
 				DrawPlane((Vector3){0.0f, waffle, 0.0f}, TILE, SKYBLUE);
+        DrawModel(model, origin, 1.0f, RAYWHITE);
+
 
 			EndMode3D();
 			
@@ -101,6 +114,7 @@ int main(void)
 			DrawText(TextFormat("%s", canMove ? "True" : "False"), 10, 90, 20, BLUE);
 			DrawText(TextFormat("%f", waffle), 10, 110, 20, RED);
 
+
 			DrawFPS(10, 10);
 
 		EndDrawing();
@@ -108,6 +122,9 @@ int main(void)
 		//increment the frame counter
 		++framesCounter;
 	}
+  UnloadModel(model);
+  UnloadImageColors(mapPixels);
+  UnloadTexture(texMapAtlas);
 	return 0;
 }
 // handle inputs 
@@ -133,7 +150,7 @@ void updateMove(Camera *camera)
 	if (isRight && canMove) {resetStatics(); angle = -4.5f*DEG2RAD; }
 	if (isLeft && canMove) {resetStatics(); angle = 4.5f*DEG2RAD; }
 	if (isDown && canMove) {resetStatics(); angle = -9.0f*DEG2RAD; }
-	if (isUp && canMove) {resetStatics(); distance = 0.5f; }
+	if (isUp && canMove && canMoveForwards) {resetStatics(); distance = 0.5f; }
 
 	if (framesCounter < 20) // movement takes half a second, or 30 frames so we check framesCounter
 	{
