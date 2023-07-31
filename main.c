@@ -1,5 +1,7 @@
 #include "raylib.h"
 #include "essentials.h"
+#include "src/rcamera.h"
+#include "src/raymath.h"
 
 // DEFINITIONS
 #ifndef MAIN
@@ -23,6 +25,7 @@ static Model model = { 0 };
 static Texture2D texMapAtlas = { 0 };
 static Color *mapPixels = 0;
 
+
 typedef enum Screen {
 	WORLDMAP,
 	DUNGEON,
@@ -40,6 +43,7 @@ void CameraYaw(Camera *camera, float angle, bool rotateAroundTarget);
 void CameraMoveForward(Camera *camera, float distance, bool moveInWorldSpace);
 void CameraPitch(Camera *camera, float angle, bool lockView, bool rotateAroundTarget, bool rotateUp);
 void updateMove(Camera *camera);
+void CollisionHandler(Camera *camera);
 void resetStatics();
 
 int main(void) 
@@ -62,7 +66,7 @@ int main(void)
 	camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
 	camera.fovy = 60.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
-
+  
   // Load textures
   Image imMap = LoadImage("resources/game_map.png");  // Load texMap image (RAM)
   Mesh mesh = GenMeshCubicmap(imMap, (Vector3){ 10.0f, 6.0f, 10.0f });
@@ -97,22 +101,14 @@ int main(void)
 					if (MOVETYPE == FREEMOVE) updateMove(&camera);
 				}
 				// figure out a way to decouple frame time with movement
-				// DrawGrid(10, 10.0f);
-				DrawPlane(origin, (Vector2){10.0f, 10.0f}, BROWN);
-				DrawPlane((Vector3){0.0f, 0.0f, 10.0f}, TILE, RED);
-				DrawPlane((Vector3){10.0f, 0.0f, 0.0f}, TILE, BLUE);
-				DrawPlane((Vector3){10.0f, 0.0f, 10.0f}, TILE, GREEN);
-				DrawPlane((Vector3){0.0f, waffle, 0.0f}, TILE, SKYBLUE);
         DrawModel(model, origin, 1.0f, RAYWHITE);
 
 
 			EndMode3D();
 			
 			// Debug text
-			DrawText("Welcome to the world of SHIN MEGAMI TENSEI!", 10, 40, 20, LIGHTGRAY);
-			DrawText(TextFormat("%f %f %f", camera.position.x, camera.position.y, camera.position.z), 10, 70, 20, RED);
+			DrawText(TextFormat("%f %f", camera.target.x, camera.target.z), 10, 70, 20, RED);
 			DrawText(TextFormat("%s", canMove ? "True" : "False"), 10, 90, 20, BLUE);
-			DrawText(TextFormat("%f", waffle), 10, 110, 20, RED);
 
 
 			DrawFPS(10, 10);
@@ -166,4 +162,12 @@ void updateMove(Camera *camera)
 		distance = 0.0f;
 		isRight = isLeft = isDown = isUp = false;
 	}
+}
+void CollisionHandler(Camera *camera) {
+  Vector3 forward = GetCameraForward(camera);
+  forward = Vector3Scale(forward, 10.0f);
+  Vector3 collisionChecker = Vector3Add(camera->position, forward);
+
+  // TODO: figure out a way to make collision detect in whitespace
+  // if (collisionChecker)
 }
