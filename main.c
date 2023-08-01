@@ -4,6 +4,7 @@
 #include "src/raymath.h"
 #include "static.h"
 #include "screentypes.c"
+#include "mapdata.c"
 // DEFINITIONS
 #ifndef MAIN
 #define MAIN
@@ -19,14 +20,12 @@ static Color *mapPixels = 0;
 void inputHandler();
 void updateMove(Camera *camera);
 void resetStatics();
-void CollisionChecker(Camera *camera);
 
 int main(void) 
 {
 	// Constant definitions
 	static const int screenWidth = 800;
 	static const int screenHeight = 600;
-	static const Vector3 origin = {0.0f, 0.0f, 0.0f};
 
 	Screen SCREENSTATE = { 1 };
 	MoveType MOVETYPE = { 0 }; 
@@ -41,10 +40,9 @@ int main(void)
 	camera.fovy = 60.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
 
-  static int mapArray[32][32] = { 0 };
   
   // Load textures
-  Image imMap = LoadImage("resources/game_map.png");  // Load texMap image (RAM)
+  Image imMap = LoadImage("resources/game_map2.png");  // Load texMap image (RAM)
   Mesh mesh = GenMeshCubicmap(imMap, (Vector3){ 10.0f, 6.0f, 10.0f });
   model = LoadModelFromMesh(mesh);                    // Load generated mesh into a model
   texMapAtlas = LoadTexture("resources/cubicmap_chadlas.png");      // Load map texture
@@ -83,7 +81,7 @@ int main(void)
 			// Debug text
 			DrawText(TextFormat("%f %f", camera.target.x, camera.target.z), 10, 70, 20, RED);
 			DrawText(TextFormat("%s", canMove ? "True" : "False"), 10, 90, 20, BLUE);
-
+			DrawText(TextFormat("%s", canMoveForwards ? "True" : "False"), 10, 110, 20, BLUE);
 
 			DrawFPS(10, 10);
 
@@ -136,14 +134,4 @@ void updateMove(Camera *camera)
 		distance = 0.0f;
 		isRight = isLeft = isDown = isUp = false;
 	}
-}
-void CollisionChecker(Camera *camera)
-{
-  float playerRadius = 0.1f;
-  Vector3 forward = GetCameraForward(camera);
-  Vector3 wishPosition = camera->position;
-  forward.y = 0;
-  forward = Vector3Normalize(forward);
-  forward = Vector3Scale(forward, 10.0f);
-  wishPosition = Vector3Add(wishPosition, forward);
 }

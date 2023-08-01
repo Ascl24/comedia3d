@@ -10,3 +10,4 @@ static bool isRight = false;
 static bool isLeft = false;
 static float waffle = 0.0f;
 static bool canMoveForwards = false;
+static const Vector3 origin = {0.0f, 0.0f, 0.0f};
