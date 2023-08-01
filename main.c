@@ -2,49 +2,24 @@
 #include "essentials.h"
 #include "src/rcamera.h"
 #include "src/raymath.h"
-
+#include "static.h"
+#include "screentypes.c"
 // DEFINITIONS
 #ifndef MAIN
 #define MAIN
 #endif
 
-/* Static Variables */
-static int framesCounter = 0;
-static bool canMove = true;
-static bool currentAngle = false;
-static float angle = 0.0f;
-static float distance = 0.0f;
-static bool isUp = false;
-static bool isDown = false;
-static bool isRight = false;
-static bool isLeft = false;
-static float waffle = 0.0f;
-static bool canMoveForwards = false;
 // importaed from raygame
 static Model model = { 0 };
 static Texture2D texMapAtlas = { 0 };
 static Color *mapPixels = 0;
 
 
-typedef enum Screen {
-	WORLDMAP,
-	DUNGEON,
-	MENU
-} Screen;
-
-typedef enum MoveType {
-	FREEMOVE,
-	MENUMOVE
-} MoveType;
-
 // Forward declarations
 void inputHandler();
-void CameraYaw(Camera *camera, float angle, bool rotateAroundTarget);
-void CameraMoveForward(Camera *camera, float distance, bool moveInWorldSpace);
-void CameraPitch(Camera *camera, float angle, bool lockView, bool rotateAroundTarget, bool rotateUp);
 void updateMove(Camera *camera);
-void CollisionHandler(Camera *camera);
 void resetStatics();
+void CollisionChecker(Camera *camera);
 
 int main(void) 
 {
@@ -52,7 +27,6 @@ int main(void)
 	static const int screenWidth = 800;
 	static const int screenHeight = 600;
 	static const Vector3 origin = {0.0f, 0.0f, 0.0f};
-	Vector2 TILE = (Vector2){10.0f, 10.0f};
 
 	Screen SCREENSTATE = { 1 };
 	MoveType MOVETYPE = { 0 }; 
@@ -66,12 +40,14 @@ int main(void)
 	camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
 	camera.fovy = 60.0f;
 	camera.projection = CAMERA_PERSPECTIVE;
+
+  static int mapArray[32][32] = { 0 };
   
   // Load textures
   Image imMap = LoadImage("resources/game_map.png");  // Load texMap image (RAM)
   Mesh mesh = GenMeshCubicmap(imMap, (Vector3){ 10.0f, 6.0f, 10.0f });
   model = LoadModelFromMesh(mesh);                    // Load generated mesh into a model
-  texMapAtlas = LoadTexture("resources/cubicmap_atlas.png");      // Load map texture
+  texMapAtlas = LoadTexture("resources/cubicmap_chadlas.png");      // Load map texture
   model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texMapAtlas;     // Set map diffuse texture
   mapPixels = LoadImageColors(imMap); // Get map image data to be used for collision detection
 
@@ -85,8 +61,6 @@ int main(void)
 	{
 		// check for input every frame
 		inputHandler();
-		// and then update camera movement
-
 
 		/* TODO: Create collision for walls and start creating screens */
 		BeginDrawing();
@@ -146,7 +120,7 @@ void updateMove(Camera *camera)
 	if (isRight && canMove) {resetStatics(); angle = -4.5f*DEG2RAD; }
 	if (isLeft && canMove) {resetStatics(); angle = 4.5f*DEG2RAD; }
 	if (isDown && canMove) {resetStatics(); angle = -9.0f*DEG2RAD; }
-	if (isUp && canMove && canMoveForwards) {resetStatics(); distance = 0.5f; }
+	if (isUp && canMove) {resetStatics(); distance = 0.5f; }
 
 	if (framesCounter < 20) // movement takes half a second, or 30 frames so we check framesCounter
 	{
@@ -163,11 +137,13 @@ void updateMove(Camera *camera)
 		isRight = isLeft = isDown = isUp = false;
 	}
 }
-void CollisionHandler(Camera *camera) {
+void CollisionChecker(Camera *camera)
+{
+  float playerRadius = 0.1f;
   Vector3 forward = GetCameraForward(camera);
+  Vector3 wishPosition = camera->position;
+  forward.y = 0;
+  forward = Vector3Normalize(forward);
   forward = Vector3Scale(forward, 10.0f);
-  Vector3 collisionChecker = Vector3Add(camera->position, forward);
-
-  // TODO: figure out a way to make collision detect in whitespace
-  // if (collisionChecker)
+  wishPosition = Vector3Add(wishPosition, forward);
 }
