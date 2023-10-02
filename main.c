@@ -4,7 +4,6 @@
 #include "src/raymath.h"
 #include "static.h"
 #include "screentypes.c"
-#include "mapdata.c"
 // DEFINITIONS
 #ifndef MAIN
 #define MAIN
@@ -82,6 +81,7 @@ int main(void)
 			DrawText(TextFormat("%f %f", camera.target.x, camera.target.z), 10, 70, 20, RED);
 			DrawText(TextFormat("%s", canMove ? "True" : "False"), 10, 90, 20, BLUE);
 			DrawText(TextFormat("%s", canMoveForwards ? "True" : "False"), 10, 110, 20, BLUE);
+      DrawText("?", 10, 130, 20, GREEN);
 
 			DrawFPS(10, 10);
 
@@ -123,7 +123,7 @@ void updateMove(Camera *camera)
 	if (framesCounter < 20) // movement takes half a second, or 30 frames so we check framesCounter
 	{
 	CameraYaw(camera, angle, false);
-	CameraMoveForward(camera, distance, true);
+  CameraMoveForward(camera, distance, false);
 	}
 	if (framesCounter > 20) 
 	{
