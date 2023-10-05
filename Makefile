@@ -1,2 +1,2 @@
 game: main.c
-	gcc main.c -lraylib -o game
+	cc main.c -lraylib -o game
