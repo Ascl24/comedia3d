@@ -25,11 +25,9 @@ int main(void)
         // Constant definitions
         static const int screenWidth = 800;
         static const int screenHeight = 600;
-
+        InitWindow(screenWidth, screenHeight, "COMEDIA");
         Screen SCREENSTATE = { 1 };
         MoveType MOVETYPE = { 0 }; 
-
-        InitWindow(screenWidth, screenHeight, "COMEDIA");
         
         // Camera Parameters
         Camera3D camera = { 0 };
@@ -38,7 +36,7 @@ int main(void)
         camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
         camera.fovy = 60.0f;
         camera.projection = CAMERA_PERSPECTIVE;
-
+        int cameraMode = CAMERA_FIRST_PERSON;
   
         // Load textures
         Image imageMap = LoadImage("resources/game_map2.png");  // Load texMap image (RAM)
@@ -49,13 +47,10 @@ int main(void)
         mapPixels = LoadImageColors(imageMap); // Get map image data to be used for collision detection
         UnloadImage(imageMap);
 
-        int cameraMode = CAMERA_FIRST_PERSON;
-
         SetTargetFPS(60);
         while(!WindowShouldClose())
         {
                 inputHandler();
-
                 /* TODO: Create collision for walls and start creating screens */
                 BeginDrawing();
                 ClearBackground(RAYWHITE);
@@ -94,15 +89,36 @@ void resetStatics()
         currentAngle = true;
         framesCounter = 0;
 }
+void CalculateAngle()
+{
+        if (!canMove)
+                return;
+        if (isRight) {
+                resetStatics();
+                angle = -4.5f*DEG2RAD;
+                return;
+        }
+        if (isLeft) {
+                resetStatics();
+                angle = 4.5f*DEG2RAD;
+                return;
+        }
+        if (isDown) {
+                resetStatics();
+                angle = -9.0f*DEG2RAD;
+                return;
+        }
+        if (isUp) {
+                resetStatics();
+                distance = 0.5f;
+                return;
+        }
+}
 void updateMove(Camera *camera)
 {
         // Update the movement if we are in a camera handled screen
         if (currentAngle == false) angle = 0.0f;
-        if (isRight && canMove) {resetStatics(); angle = -4.5f*DEG2RAD;};
-        if (isLeft && canMove) {resetStatics(); angle = 4.5f*DEG2RAD; };
-        if (isDown && canMove) {resetStatics(); angle = -9.0f*DEG2RAD; };
-        if (isUp && canMove) {resetStatics(); distance = 0.5f; };
-
+        CalculateAngle();
         if (framesCounter < 20) {
         CameraYaw(camera, angle, false);
         CameraMoveForward(camera, distance, false);
