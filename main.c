@@ -19,6 +19,7 @@ static Color *mapPixels = 0;
 void inputHandler();
 void updateMove(Camera *camera);
 void resetStatics();
+void CalculateAngle();
 
 int main(void) 
 {
@@ -56,9 +57,9 @@ int main(void)
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 // draw new camera in here
-                if ((isRight || isLeft || isUp || isDown) && SCREENSTATE == DUNGEON ) 
-                        if (MOVETYPE == FREEMOVE) updateMove(&camera);
-                        // figure out a way to decouple frame time with movement
+                if (MOVETYPE == FREEMOVE) 
+                        updateMove(&camera);
+                // figure out a way to decouple frame time with movement
                 DrawModel(model, origin, 1.0f, RAYWHITE);
                 EndMode3D();
                 // Debug text
@@ -66,7 +67,6 @@ int main(void)
                 DrawText(TextFormat("%s", canMove ? "True" : "False"), 10, 90, 20, BLUE);
                 DrawFPS(10, 10);
                 EndDrawing();
-
                 //increment the frame counter
                 ++framesCounter;
         }
@@ -78,10 +78,14 @@ int main(void)
 // handle inputs 
 void inputHandler() 
 {
-        if (IsKeyDown(KEY_RIGHT)) isRight = true;
-        if (IsKeyDown(KEY_LEFT)) isLeft = true;
-        if (IsKeyDown(KEY_UP)) isUp = true; 
-        if (IsKeyDown(KEY_DOWN)) isDown = true; 
+        if (IsKeyDown(KEY_RIGHT)) 
+                isRight = true;
+        if (IsKeyDown(KEY_LEFT)) 
+                isLeft = true;
+        if (IsKeyDown(KEY_UP)) 
+                isUp = true; 
+        if (IsKeyDown(KEY_DOWN)) 
+                isDown = true; 
 } // cutdown on repetition
 void resetStatics()
 {
@@ -89,46 +93,40 @@ void resetStatics()
         currentAngle = true;
         framesCounter = 0;
 }
-void CalculateAngle()
+void CalculateAngle() 
 {
-        if (!canMove)
-                return;
         if (isRight) {
                 resetStatics();
                 angle = -4.5f*DEG2RAD;
-                return;
         }
         if (isLeft) {
                 resetStatics();
                 angle = 4.5f*DEG2RAD;
-                return;
         }
         if (isDown) {
                 resetStatics();
                 angle = -9.0f*DEG2RAD;
-                return;
         }
         if (isUp) {
                 resetStatics();
                 distance = 0.5f;
-                return;
         }
+        return;
 }
 void updateMove(Camera *camera)
 {
         // Update the movement if we are in a camera handled screen
-        if (currentAngle == false) angle = 0.0f;
-        CalculateAngle();
+        if (canMove)
+                CalculateAngle();
         if (framesCounter < 20) {
-        CameraYaw(camera, angle, false);
-        CameraMoveForward(camera, distance, false);
+                CameraYaw(camera, angle, false);
+                CameraMoveForward(camera, distance, false);
         }
-        else if (framesCounter > 20) {
+        if (framesCounter > 20) {
                 canMove = true;
-                currentAngle = false;
-                framesCounter = 0;
                 angle = 0.0f;
                 distance = 0.0f;
+                framesCounter = 0;
                 isRight = isLeft = isDown = isUp = false;
         }
 }
